@@ -1,0 +1,40 @@
+
+<div class="row">
+  <div class="col-12">
+    <canvas #mainCanvas [width]="width" [height]="height">
+    </canvas>
+  </div>
+</div>
+<div class="row">
+  <div class="col-3">
+    <div class="form-group">        
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" 
+          placeholder="Enter Life Count" [(ngModel)]="lifeCount"
+          aria-label="Enter Life Count" aria-describedby="button-addon">
+        <button class="btn btn-primary" type="button" id="button-addon" (click)="update()">Start</button>
+      </div>
+    </div>
+  </div>
+  <div class="col-6"></div>
+  <div class="col-3">  
+    <div class="form-group">
+      <div class="input-group mb-3">
+        <select class="form-select" id="patternSelector" [(ngModel)]="pattern">
+          <option>Beacon</option>
+          <option>Glider</option>
+          <option>Light-Weight Spaceship</option>        
+          <option>Middle-Weight Spaceship</option>
+          <option>Heavy-Weight Spaceship</option> 
+        </select>
+        <button class="btn btn-primary" type="button" id="button-addon" (click)="addPattern()">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="display: none">
+  <!-- used for double buffering -->
+  <canvas #dbCanvas [width]="width" [height]="height">
+  </canvas> 
+</div>
