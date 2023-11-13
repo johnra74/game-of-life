@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { LifeEngine, Configuration, CommandType, Command, Cell } from './life-engine';
+import { LifeEngine, Configuration, CommandType, Command, Cell, Response } from './life-engine';
 import { Observable, Subject } from 'rxjs';
 
 @Injectable({
@@ -12,6 +12,7 @@ export class LifeEngineService {
   protected boardSubject: Subject<Cell[]>;
 
   private commandSubject: Subject<Command>;
+  private worker: Worker;
 
   constructor() {
     this.readySubject = new Subject<boolean>();
@@ -20,39 +21,34 @@ export class LifeEngineService {
     this.commandSubject = new Subject<Command>();
 
     if (typeof Worker !== 'undefined') {
-      const worker: Worker = new Worker(new URL('./life-engine.worker', import.meta.url));
-      worker.onmessage = ({ data }) => {
-        if (data.success) {
-          const cmd: Command = data.cmd;
-          switch(cmd.type) {
-            case CommandType.INIT:
-              if (data.payload) {
-                worker.postMessage({type: CommandType.FETCH_NEXT_GEN});
-              }
-              break;
-            case CommandType.FETCH_NEXT_GEN:
-            case CommandType.CYCLE_REFRESHED:
-              this.boardSubject.next(data.payload);
-              break;
-            case CommandType.ADD_PATTERN:
-              this.patternAddedSubject.next(data.payload);
-              break;
-            default:
-              break;
-          }
-        }
+      this.worker = new Worker(new URL('./life-engine.worker', import.meta.url));
+      this.worker.onmessage = ({ data }) => {
+        this.handleResponse(data, () => {
+          this.worker.postMessage({type: CommandType.FETCH_NEXT_GEN});
+        });
       }
 
       this.commandSubject.asObservable()
         .subscribe({
           next: (cmd: Command) => {
-            worker.postMessage(cmd);
+            this.worker.postMessage(cmd);
           },
           error: (e) => console.log('error sending command to worker:' + e),
           complete: () => console.log('completed worker command call')
-        });
-    } else {
+        });        
+    } else {      
       const engine: LifeEngine = new LifeEngine();
+      engine.getResponseObservable()
+        .subscribe({
+          next: (resp: Response<Cell[]|boolean>) => {
+            this.handleResponse(resp, () => {
+              engine.execute({type: CommandType.FETCH_NEXT_GEN});
+            });            
+          },
+          error: (e) => console.log('Unexpected error on life enginer: ' + e),
+          complete: () => console.log('completed life enginer')
+        });
+
       this.commandSubject.asObservable()
         .subscribe({
           next: (cmd: Command) => {
@@ -62,7 +58,6 @@ export class LifeEngineService {
           complete: () => console.log('completed worker command call')
         });
     }
-
   }
 
   public getReadyObservable(): Observable<boolean> {
@@ -85,5 +80,33 @@ export class LifeEngineService {
   public add(pattern: string): void {
     const cmd: Command = { type: CommandType.ADD_PATTERN, pattern: pattern.toLocaleLowerCase() };
     this.commandSubject.next(cmd);
+  }
+
+  protected handleResponse(resp: Response<Cell[]|boolean>, callback: () => void): void {
+    if (resp.success) {
+      const cmd: Command = resp.cmd;
+      switch(cmd.type) {
+        case CommandType.INIT:
+          if (resp.payload) {
+            callback();
+          }
+          break;
+        case CommandType.FETCH_NEXT_GEN:
+        case CommandType.CYCLE_REFRESHED:
+          if (typeof resp.payload !== 'undefined') {
+            const payload: Cell[] = resp.payload as Cell[];
+            this.boardSubject.next(payload);
+          }
+          break;
+        case CommandType.ADD_PATTERN:
+          if (typeof resp.payload !== 'undefined') {
+            const payload: boolean = resp.payload as boolean;
+            this.patternAddedSubject.next(payload);
+          }
+          break;
+        default:
+          break;
+      }
+    }
   }
 }

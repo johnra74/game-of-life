@@ -1,14 +1,15 @@
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, OnDestroy, ViewChild } from '@angular/core';
 import { LifeEngineService } from '../life-engine/life-engine.service';
 import { Cell, Configuration, PIXEL_SZ } from '../life-engine/life-engine';
 import { forEach } from 'lodash';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-board',
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.scss']
 })
-export class BoardComponent implements AfterViewInit {
+export class BoardComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('mainCanvas') 
   public mainCanvasRef: ElementRef;
@@ -32,6 +33,8 @@ export class BoardComponent implements AfterViewInit {
   private hasChange: boolean;
   private intervalId: any;
 
+  private boardSubscription: Subscription;
+
   constructor(private cdRef : ChangeDetectorRef, private service: LifeEngineService) {
     this.width = 10;
     this.height = 10;
@@ -39,22 +42,25 @@ export class BoardComponent implements AfterViewInit {
     this.activeCellCount = 0;
     this.genCycleCount = 0;
 
-    this.service.getBoardObservable()
-      .subscribe({
-        next: (lives:Cell[]) => {
-          this.genCycleCount++;
-          this.dbCtx.fillStyle = "black";
-          this.dbCtx.fillRect(0, 0, Number(this.width), this.height);
-          this.activeCellCount = lives.length;
+    this.boardSubscription = 
+      this.service.getBoardObservable()
+        .subscribe({
+          next: (lives:Cell[]) => {
+            this.genCycleCount++;
+            this.dbCtx.fillStyle = "black";
+            this.dbCtx.fillRect(0, 0, Number(this.width), this.height);
+            this.activeCellCount = lives.length;
 
-          forEach(lives, (cell: Cell) => {
-            this.doubleBufferDraw(cell);
-          });
+            forEach(lives, (cell: Cell) => {
+              this.doubleBufferDraw(cell);
+            });
 
-          this.hasChange = true;
-        }
-      });
-  }
+            this.hasChange = true;
+          },
+          error: (e) => console.error(e),
+          complete: () => console.info('board observer completed')
+        });
+  }  
 
   @HostListener('window:resize', ['$event'])
   public onResize(event: any): void {
@@ -86,6 +92,11 @@ export class BoardComponent implements AfterViewInit {
       this.fps = Math.round(counter / diff);
       if (diff > 65) diff = 65;
     }, 65 - diff); // 15 frames per sec   
+  }
+
+  public ngOnDestroy(): void {
+    clearInterval(this.intervalId);
+    this.boardSubscription.unsubscribe();
   }
 
   public addPattern(): void {
