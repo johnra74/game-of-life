@@ -2,10 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="description" content="From Conway's [Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) Wikipedia, also known simply as Life, a cellular automaton devised by the British mathematician John Horton Conway in 1970">
+  <meta name="keywords" content="game-of-life, conway, angular, webworker">
+  <meta name="author" content="Johnathan Ra">
   <title>JSTR's Yet Another Game of Life</title>
-  <base href="/">
+  <base href=".">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script type="application/ld+json">
+    {
+      "@content": "http://schema.org",
+      "@type": "WebSite",
+      "url": "https://johnra74.github.io/game-of-life-web/",
+      "creator": {
+        "@type": "Person",
+        "email": "mailto:hi@johnra.me",
+        "name": "Johnathan Ra",
+        "url": "https://johnra.me"
+      },
+      "description": "From Conway's [Game of Life](https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life) Wikipedia, also known simply as Life, a cellular automaton devised by the British mathematician John Horton Conway in 1970. It is a zero-player game, meaning that its evolution is determined by its initial state, requiring no further input. One interacts with the Game of Life by creating an initial configuration and observing how it evolves. It is Turing complete and can simulate a universal constructor or any other Turing machine."
+      "keywords": ["game-of-life", "conway", "angular", "webworker"],
+      "isBasedOn": "https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life",
+      "teaches": ["webworker", "angular"]
+    }
+  </script>
 </head>
 <body>
   <app-root></app-root>
