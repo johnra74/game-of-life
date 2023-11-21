@@ -15,13 +15,13 @@ export interface Configuration {
 }
 
 export enum CommandType {
-  INIT, CYCLE_REFRESHED, FETCH_NEXT_GEN, ADD_PATTERN
+  INIT, CYCLE_REFRESHED, FETCH_NEXT_GEN, ADD_PATTERN, ADD_CUSTOM_PATTERN
 }
 
 export interface Command {
   type: CommandType;
   config?: Configuration;
-  pattern?: string;
+  pattern?: string|Cell[];
 }
 
 export interface Response<T> {
@@ -58,9 +58,21 @@ export class LifeEngine {
         this.responseSubject.next({cmd: cmd, success: true, payload: true} as Response<boolean>);
         this.run();
         break;
+      case CommandType.ADD_CUSTOM_PATTERN:
+        if (typeof cmd.pattern !== 'undefined') {
+          const pattern: Cell[] = cmd.pattern as Cell[];
+          forEach(pattern, (cell:Cell) => {
+            cell.coordinateX += (this.centerCoordX - 5);
+            cell.coordinateY += (this.centerCoordY - 5);
+          });
+          this.patternToAdd = [...pattern];
+          this.responseSubject.next({cmd: cmd, success: true, payload: true} as Response<boolean>);
+        }
+        break;
       case CommandType.ADD_PATTERN:
         if (typeof cmd.pattern !== 'undefined') {
-          this.loadPattern(cmd.pattern);
+          const pattern: string = cmd.pattern as string;
+          this.loadPattern(pattern);
           this.responseSubject.next({cmd: cmd, success: true, payload: true} as Response<boolean>);
         }
         break;        
@@ -162,8 +174,8 @@ export class LifeEngine {
 
   private init(cfg: Configuration): void {
     this.currentGeneration = [];    
-    this.boardWidth = Math.round(cfg.boardWidth / PIXEL_SZ);
-    this.boardHeight = Math.round(cfg.boardHeight / PIXEL_SZ);
+    this.boardWidth = Math.round(cfg.boardWidth / PIXEL_SZ) - 1;
+    this.boardHeight = Math.round(cfg.boardHeight / PIXEL_SZ) - 1;
     this.centerCoordX = Math.round(this.boardWidth / 2);
     this.centerCoordY = Math.round(this.boardHeight / 2);
 

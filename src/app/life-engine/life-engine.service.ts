@@ -82,6 +82,11 @@ export class LifeEngineService {
     this.commandSubject.next(cmd);
   }
 
+  public addCustomShape(shape:Cell[]): void {
+    const cmd: Command = { type: CommandType.ADD_CUSTOM_PATTERN, pattern: shape };
+    this.commandSubject.next(cmd);
+  }
+
   protected handleResponse(resp: Response<Cell[]|boolean>, callback: () => void): void {
     if (resp.success) {
       const cmd: Command = resp.cmd;

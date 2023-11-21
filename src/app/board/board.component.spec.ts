@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { LifeEngineService } from '../life-engine/life-engine.service';
 import { Subject } from 'rxjs';
 import { Cell, Configuration } from '../life-engine/life-engine';
+import { BsModalService, ModalModule } from 'ngx-bootstrap/modal';
 
 describe('Given BoardComponent', () => {
   let component: BoardComponent;
@@ -21,8 +22,9 @@ describe('Given BoardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ BoardComponent ],
-      imports: [FormsModule],
+      imports: [FormsModule, ModalModule],
       providers: [
+        BsModalService,
         { provide: LifeEngineService, useValue: mockLifeEngineService }
       ]
     })
@@ -44,7 +46,7 @@ describe('Given BoardComponent', () => {
       numberOfLiveCell: component.lifeCount
     }
 
-    component.update();
+    component.start();
     expect(mockLifeEngineService.init).toHaveBeenCalledOnceWith(cfg);
   });
 

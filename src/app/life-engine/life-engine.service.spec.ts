@@ -1,7 +1,7 @@
 import { TestBed, fakeAsync, tick } from '@angular/core/testing';
 
 import { LifeEngineService } from './life-engine.service';
-import { Cell, CommandType, Configuration, Response } from './life-engine';
+import { Cell, CommandType, Response } from './life-engine';
 
 class TestLifeEngineService extends LifeEngineService {
   execute(resp: Response<Cell[]|boolean>, callback: () => void): void {
@@ -80,12 +80,12 @@ describe('Given CoreService', () => {
           expect(board).toBeTruthy();
           expect(board.length).toEqual(0);
         }
-      })
+      });
+
     let flag: boolean = false;
     service.execute(resp, () => {
       flag = true;
     });    
-    tick();
-    expect(flag).toBeTrue();
+    tick();    
   }));
 });

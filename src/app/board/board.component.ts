@@ -3,6 +3,8 @@ import { LifeEngineService } from '../life-engine/life-engine.service';
 import { Cell, Configuration, PIXEL_SZ } from '../life-engine/life-engine';
 import { forEach } from 'lodash';
 import { Subscription } from 'rxjs';
+import { BsModalRef, BsModalService, ModalOptions } from 'ngx-bootstrap/modal';
+import { CustomShapeModalComponent } from './custom-shape-modal/custom-shape-modal.component';
 
 @Component({
   selector: 'app-board',
@@ -10,6 +12,7 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./board.component.scss']
 })
 export class BoardComponent implements AfterViewInit, OnDestroy {
+  public bsModalRef?: BsModalRef;
 
   @ViewChild('mainCanvas') 
   public mainCanvasRef: ElementRef;
@@ -35,7 +38,7 @@ export class BoardComponent implements AfterViewInit, OnDestroy {
 
   private boardSubscription: Subscription;
 
-  constructor(private cdRef : ChangeDetectorRef, private service: LifeEngineService) {
+  constructor(private cdRef : ChangeDetectorRef, private service: LifeEngineService, private modalService: BsModalService) {
     this.width = 10;
     this.height = 10;
     this.lifeCount = 1000;
@@ -47,7 +50,7 @@ export class BoardComponent implements AfterViewInit, OnDestroy {
         .subscribe({
           next: (lives:Cell[]) => {
             this.genCycleCount++;
-            this.dbCtx.fillStyle = "black";
+            this.dbCtx.fillStyle = 'black';
             this.dbCtx.fillRect(0, 0, Number(this.width), this.height);
             this.activeCellCount = lives.length;
 
@@ -100,7 +103,17 @@ export class BoardComponent implements AfterViewInit, OnDestroy {
   }
 
   public addPattern(): void {
-    this.service.add(this.pattern);
+    if (this.pattern.endsWith('Create Custom Shape')) {
+      const initialState: ModalOptions = {
+        initialState: {
+          title: 'Create Custom Shape'
+        }
+      };
+      this.bsModalRef = this.modalService.show(CustomShapeModalComponent, initialState);
+      this.bsModalRef.content.closeBtnName = 'Load Shape';
+    } else {
+      this.service.add(this.pattern);
+    }    
   }
 
   public start(): void {
@@ -123,11 +136,11 @@ export class BoardComponent implements AfterViewInit, OnDestroy {
   }
 
   private draw(): void {
-    this.mainCtx.fillStyle = "black";
+    this.mainCtx.fillStyle = 'black';
     this.mainCtx.fillRect(0, 0, Number(this.width), this.height);
 
     this.mainCtx.drawImage(this.dbCanvas, 0, 0);
-    this.mainCtx.fillStyle = "green";
+    this.mainCtx.fillStyle = 'green';
     this.mainCtx.fillText(this.fps + ' fps', this.width - 50, this.height - 25);
     this.mainCtx.fillText(this.activeCellCount + ' living cells', 10, this.height - 25);
     this.mainCtx.fillText('cycle ' + this.genCycleCount, 10, 30);
@@ -135,7 +148,7 @@ export class BoardComponent implements AfterViewInit, OnDestroy {
 
   private doubleBufferDraw(cell: Cell) : void {    
     this.dbCtx.globalAlpha = 1.0;
-    this.dbCtx.fillStyle = "#c0c0c0";
+    this.dbCtx.fillStyle = '#c0c0c0';
 
     this.dbCtx.fillRect(cell.coordinateX * PIXEL_SZ, cell.coordinateY * PIXEL_SZ, PIXEL_SZ, PIXEL_SZ);
     this.dbCtx.globalAlpha = 0.6;
