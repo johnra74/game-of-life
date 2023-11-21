@@ -103,7 +103,7 @@ export class BoardComponent implements AfterViewInit, OnDestroy {
     this.service.add(this.pattern);
   }
 
-  public update(): void {
+  public start(): void {
     const cfg: Configuration = { 
       boardWidth: this.width,
       boardHeight: this.height,
