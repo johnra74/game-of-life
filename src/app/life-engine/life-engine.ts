@@ -1,4 +1,4 @@
-import { filter, forEach } from 'lodash';
+import { filter } from 'lodash';
 import { Observable, Subject } from 'rxjs';
 
 export const PIXEL_SZ: number = 10;
@@ -162,8 +162,8 @@ export class LifeEngine {
 
   private init(cfg: Configuration): void {
     this.currentGeneration = [];    
-    this.boardWidth = Math.round(cfg.boardWidth / PIXEL_SZ);
-    this.boardHeight = Math.round(cfg.boardHeight / PIXEL_SZ);
+    this.boardWidth = Math.round(cfg.boardWidth / PIXEL_SZ) - 1;
+    this.boardHeight = Math.round(cfg.boardHeight / PIXEL_SZ) - 1;
     this.centerCoordX = Math.round(this.boardWidth / 2);
     this.centerCoordY = Math.round(this.boardHeight / 2);
 
