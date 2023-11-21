@@ -36,8 +36,9 @@ export class CustomShapeModalComponent implements AfterViewInit {
 
     if (this.exists(cell)) {
       // remove
-      this.shape = 
-        filter(this.shape, (c:Cell) => c.coordinateX !== cell.coordinateX && c.coordinateY !== cell.coordinateY);
+      const newShape: Cell[] = 
+        filter(this.shape, (c:Cell) => !(c.coordinateX === cell.coordinateX && c.coordinateY === cell.coordinateY));
+      this.shape = [...newShape];
     } else {
       // add
       this.shape.push(cell);
